@@ -57,10 +57,10 @@ Runs frontend on http://localhost:4500
 ### Frontend, Backend, DB, AI
 
 **AI / RAG**
--Embeddings: Jina Embeddings (free tier)
--Vector Store: Qdrant
--LLM: OpenAI API for final answer generation
--Pipeline: Retrieve → Rank → LLM Answer
+-Embeddings: Jina Embeddings (free tier)\
+-Vector Store: Qdrant\
+-LLM: OpenAI API for final answer generation\
+-Pipeline: Retrieve → Rank → LLM Answer\
 
 **Frontend**
 -React
