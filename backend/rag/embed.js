@@ -14,7 +14,7 @@ async function embedText(message) {
             },
             {
                 headers: { 
-                'Authorization': `Bearer jina_4dc39ffef97b417c8fa9154c1c1917bag1xES5vVq8ezS0A-a6-sS90V_vrl`,
+                'Authorization': `Bearer ${process.env.JINA_API_KEY}`,
                 'Content-Type': 'application/json',
                 'Accept': 'application/json'
                 }
