@@ -24,7 +24,6 @@ cd backend
 npm install
 ```
 
-
 #### Environment Variables BE and FE
 ```bash
 MONGODB_URI=**************************************************************
@@ -78,6 +77,22 @@ Runs frontend on http://localhost:4500
 -Frontend: Vercel
 -Backend:  Render
 
+## 3. Cache 
+
+**Caching & Performance**
+
+-Key: sessionId
+-Value: Array of conversation messages
+-TTL: 10 minutes of inactivity
+
+```bash
+const SESSION_TTL = 10 * 60 * 1000; 
+
+sessionCache.set(sessionId, {
+  messages,
+  expiresAt: Date.now() + SESSION_TTL
+});
+```
 ##  4. Decisions & Assumptions
 
 **Key design decisions**
