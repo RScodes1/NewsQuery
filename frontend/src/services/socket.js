@@ -17,7 +17,6 @@ export const initSocket = (sessionId, onToken, onFinal) => {
     return socket;
 };
 
-// Pass sessionId explicitly from frontend when sending
 export const sendMessage = (sessionId, message) => {
     if (!sessionId) {
         alert("Please start a session first");

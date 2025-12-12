@@ -9,7 +9,6 @@ const { randomUUID } = require("crypto");
 async function ingestArticles(articleUrls = [], collectionName = 'news_articles') {
     const docsToUpsert = [];
 
-    // Fetch all articles in parallel
     const articlePromises = articleUrls.map(async (url) => {
         try {
             const res = await axios.get(url, {
@@ -31,7 +30,6 @@ async function ingestArticles(articleUrls = [], collectionName = 'news_articles'
 
             const chunks = chunkText(text, 1000);
 
-            // Embed chunks in parallel
             const embeddings = await Promise.all(
                 chunks.map(async (chunk) => {
                     const embedding = await embedText(chunk);

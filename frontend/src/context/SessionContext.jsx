@@ -19,7 +19,7 @@ export const SessionProvider = ({ children }) => {
       if (res?.sessionId) {
         setSessionId(res.sessionId);
           localStorage.setItem("sessionId", res.sessionId);
-        setHistory([]); // reset history on new session
+        setHistory([]);
       }
     } catch (err) {
       console.error("Failed to create session", err);
@@ -27,7 +27,7 @@ export const SessionProvider = ({ children }) => {
   };
 
 
-  // Clear session (both frontend and backend)
+  // Clear session
   const resetSession = async () => {
     if (!sessionId) return;
     try {

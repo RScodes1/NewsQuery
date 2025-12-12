@@ -34,7 +34,7 @@ async function ensureCollection(collectionName, vectorSize = 768) {
         if (!exists) {
             await qdrant.createCollection(collectionName, {
                 vectors: {
-                    size: vectorSize, // Jina embeddings size
+                    size: vectorSize,
                     distance: "Cosine",
                 },
             });

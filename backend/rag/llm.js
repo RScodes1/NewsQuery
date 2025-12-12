@@ -27,7 +27,7 @@ async function callLLM(question, hits) {
 
   try {
     const response = await openai.chat.completions.create({
-      model: "gpt-4",  // or "gpt-3.5-turbo"
+      model: "gpt-4",
       messages: [
         { role: "system", content: "You are a helpful news assistant." },
         { role: "user", content: prompt }
@@ -35,7 +35,6 @@ async function callLLM(question, hits) {
       temperature: 0
     });
 
-    // The assistant’s reply is in response.choices[0].message.content
     return response.choices[0].message.content;
   } catch (err) {
     console.error("OpenAI API call failed", err);

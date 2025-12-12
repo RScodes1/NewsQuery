@@ -7,7 +7,7 @@ const { getRedis } = require('../config/redis');
 router.post('/create', async (req, res) => {
     try {
         const sessionId = await createSession();
-        // initialize empty chat history in Redis
+
         const redis = getRedis();
         await redis.del(`chat:${sessionId}`);
         res.json({ sessionId });
@@ -16,7 +16,7 @@ router.post('/create', async (req, res) => {
     }
 });
 
-// get session history
+
 router.get('/:id/history', async (req, res) => {
     try {
         const redis = getRedis();
