@@ -1,7 +1,7 @@
 import { useState, useEffect, useRef } from "react";
 import Message from "../Message/Message";
 import ChatInput from "../ChatInput/ChatInput";
-import './ChatWindow.scss';
+import "./ChatWindow.scss";
 
 import { useSession } from "../../context/SessionContext";
 import { initSocket, sendMessage } from "../../services/socket";
@@ -11,121 +11,113 @@ const ChatWindow = () => {
   const { sessionId, setSessionId, createSession, resetSession } = useSession();
 
   const [messages, setMessages] = useState([]);
-  const [streamingText, setStreamingText] = useState("");
-   const [loading, setLoading] = useState(false);
-   const bottomRef = useRef(null);
+  const bottomRef = useRef(null);
 
-   useEffect(() => {
-  bottomRef.current?.scrollIntoView({ behavior: "smooth" });
-}, [messages, streamingText]);
+  // Auto scroll
+  useEffect(() => {
+    bottomRef.current?.scrollIntoView({ behavior: "smooth" });
+  }, [messages]);
 
+  // Initialize session + socket
+  useEffect(() => {
+    const start = async () => {
+      let id = sessionId || localStorage.getItem("sessionId") || (await createSession());
+      setSessionId(id);
 
-useEffect(() => {
-  const start = async () => {
-    let id = sessionId;
+      // Fetch history
+      const history = await fetchChatHistoryApi(id);
+      setMessages(Array.isArray(history) ? history : []);
 
-    // No session in state → load from localStorage
-    if (!id) {
-      id = localStorage.getItem("sessionId");
-    }
+      // Initialize socket
+      initSocket(
+        id,
+        // Token callback: append streaming token to last bot message
+        (token) => {
+          setMessages((prev) => {
+            const copy = [...prev];
+            const last = copy[copy.length - 1];
 
-    // Still no session → create one
-    if (!id) {
-      id = await createSession();
-    }
+            if (last?.role === "bot" && last.loading) {
+              // Stop dots animation once first token arrives
+              last.dots = false;
+              last.text += token;
+            }
 
-    setSessionId(id);
+            return copy;
+          });
+        },
+        // Final callback: finalize bot message
+        (finalText) => {
+          setMessages((prev) => {
+            const copy = [...prev];
+            const last = copy[copy.length - 1];
 
-    // Fetch past messages
-    const history = await fetchChatHistoryApi(id);
+            if (last?.role === "bot") {
+              last.text = finalText;
+              last.loading = false;
+              last.dots = false;
+            }
 
-    setMessages(Array.isArray(history) ? history : []);
+            return copy;
+          });
+        }
+      );
+    };
 
-    // Initialize socket
-    initSocket(
-      id,
-    (token) => {
-  setMessages(prev => {
-    const copy = [...prev];
-    const last = copy[copy.length - 1];
+    start();
+  }, []);
 
-    if (last?.loading) {
-      last.text += token;  // build streaming text here
-    }
+  // Send message
+  const handleSend = (msg) => {
+    // Add user message
+    setMessages((prev) => [...prev, { role: "user", text: msg }]);
 
-    return copy;
-  });
-},
+    // Add bot placeholder with dots animation
+    setMessages((prev) => [
+      ...prev,
+      { role: "bot", text: "", loading: true, dots: true }
+    ]);
 
-  (finalText) => {
-    setMessages(prev => {
-      const copy = [...prev];
-      const last = copy[copy.length - 1];
-
-      // Replace ONLY if placeholder exists
-      if (last?.loading === true) {
-        copy[copy.length - 1] = {
-          role: "bot",
-          text: finalText,
-          loading: false
-        };
-      }
-
-      return copy;
-    });
-
-    setStreamingText(""); 
-    setLoading(false);
-}
-
-    );
+    sendMessage(sessionId, msg);
   };
 
-  start();
-}, []);
-
-const handleSend = (msg) => {
-  setMessages(prev => [...prev, { role: "user", text: msg }]);
-
-    setMessages(prev => [...prev, { role: "bot", text: "", loading: true }]);
-    setLoading(true);
-
-  sendMessage(sessionId, msg);
-};
-
-
+  // Reset session
   const handleReset = async () => {
     if (!sessionId) return;
-
     await resetSession(sessionId);
     setMessages([]);
   };
 
   return (
-    <> 
-      <h1>News Feed chatbot</h1>
-    <div className="chat-window">
-            
-          <button onClick={handleReset} className="reset-btn" disabled={!sessionId}>
-        Reset Session
-         </button>
-      <div className="messages">
-        {messages?.map((m, i) => (
-            <Message 
-            key={i} 
-            role={m.role} 
-            text={m.text} 
-            loading={m.loading === true}
+    <>
+      <h1>News Feed Chatbot</h1>
+
+      <div className="chat-window">
+        <button
+          onClick={handleReset}
+          className="reset-btn"
+          disabled={!sessionId}
+        >
+          Reset Session
+        </button>
+
+        <div className="messages">
+          {messages.map((m, i) => (
+            <Message
+              key={i}
+              role={m.role}
+              text={m.text}
+              loading={m.loading}
+              dots={m.dots}
             />
-        ))}
-         <div ref={bottomRef} />
+          ))}
+
+          <div ref={bottomRef} />
         </div>
 
-      <ChatInput onSend={handleSend} />
-    
-    </div>
-     </>
-    
+        <ChatInput onSend={handleSend} />
+      </div>
+    </>
   );
 };
 

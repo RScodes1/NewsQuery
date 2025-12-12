@@ -5,6 +5,7 @@
   &.user {
     justify-content: flex-end;
   }
+
   &.bot {
     justify-content: flex-start;
   }
@@ -14,20 +15,36 @@
   padding: 10px 14px;
   border-radius: 16px;
   max-width: 70%;
-  background: #e0e0e0;
+  background: #f0f0f0;
+  position: relative;
+  word-wrap: break-word;
+  font-size: 14px;
+  line-height: 1.4;
+
+  &.user {
+    background: #d1e7ff;
+  }
 
   &.loading {
-    width: 40px;
     display: flex;
-    justify-content: center;
+    align-items: center;
+    justify-content: flex-start;
+    gap: 5px;
+    width: auto;
   }
 }
 
 .dots {
-  display: flex;
+  display: inline-flex;
   gap: 3px;
+  margin-right: 5px;
 
   span {
+    display: inline-block;
+    width: 6px;
+    height: 6px;
+    background-color: #555;
+    border-radius: 50%;
     animation: blink 1.4s infinite both;
   }
 

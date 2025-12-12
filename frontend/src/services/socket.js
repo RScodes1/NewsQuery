@@ -8,7 +8,6 @@ export const initSocket = (sessionId, onToken, onFinal) => {
     });
 
     socket.on("connect", () => {
-        console.log("Connected to WS:", socket.id);
         socket.emit("join_session", { sessionId });
     });
 
