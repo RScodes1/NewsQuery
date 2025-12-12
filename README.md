@@ -5,11 +5,11 @@
 
 ### a. Prerequisites
 
--Frontend: React 18.2.0
--Backend: Node.js >=18
--Vector DB: Qdrant
--Embeddings: Jina Embeddings
--LLM: OpenAI API Model
+-Frontend: React 18.2.0 \
+-Backend: Node.js >=18 \
+-Vector DB: Qdrant \ 
+-Embeddings: Jina Embeddings \
+-LLM: OpenAI API Model \
 
 ### b. Installation Steps
 
