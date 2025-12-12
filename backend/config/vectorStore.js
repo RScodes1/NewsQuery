@@ -1,44 +1,100 @@
-const axios = require('axios');
-const logger = require('../utils/logger');
-let CHROMA_URL = null;
+const { QdrantClient } = require("@qdrant/js-client-rest");
+const logger = require("../utils/logger");
 
+let qdrant = null;
 
-async function initVectorStore(url) {
-    if (!url) throw new Error('CHROMA_URL not set');
-    CHROMA_URL = url.replace(/\/$/, '');
-    // simple health check (may vary depending on your Chroma deployment)
-    try {
-        await axios.get(`${CHROMA_URL}/health`);
-    } catch (e) {
-        logger.warn('Chroma health check failed — ensure Chromadb server is running or adjust URL');
-    }
-    logger.info('Vector store (Chroma) initialized at ' + CHROMA_URL);
+/**
+ * Initialize Qdrant client
+ */
+async function initVectorStore(url, apiKey) {
+    if (!url) throw new Error("QDRANT_URL is required");
+  
+     
+    qdrant = new QdrantClient({
+        url,
+        apiKey,
+    });
+
+    logger.info("Vector store (Qdrant) initialized at " + url);
 }
 
 
-async function upsertEmbeddings(collectionName, docs /* [{id, embedding, metadata, text}] */) {
-    // POST /collections/{name}/items OR adjust to your Chroma REST API
-    const endpoint = `${CHROMA_URL}/collections/${collectionName}/items`;
+
+
+/**
+ * Create collection if not exists
+ */
+async function ensureCollection(collectionName, vectorSize = 768) {
     try {
-        await axios.post(endpoint, { items: docs });
+
+        const collections = await qdrant.getCollections();
+        const exists = collections.collections.some(c => c.name === collectionName);
+
+
+        if (!exists) {
+            await qdrant.createCollection(collectionName, {
+                vectors: {
+                    size: vectorSize, // Jina embeddings size
+                    distance: "Cosine",
+                },
+            });
+
+            logger.info(`Created Qdrant collection: ${collectionName}`);
+        } else {
+            logger.info(`Qdrant collection already exists: ${collectionName}`);
+        }
+    } catch (err) {
+        logger.error("Error ensuring Qdrant collection", err);
+        throw err;
+    }
+}
+
+/**
+ * Upsert embeddings into Qdrant
+ */
+async function upsertEmbeddings(collectionName, docs) {
+    try {
+        const points = docs.map(doc => ({
+            id: doc.id,
+            vector: doc.embedding,
+            payload: {
+                ...doc.metadata,
+                text: doc.text,
+            },
+        }));
+
+        await qdrant.upsert(collectionName, { points });
+
+
+        logger.info(`Upserted ${docs.length} embeddings to ${collectionName}`);
     } catch (e) {
-        logger.error('Chroma upsert failed', e?.response?.data || e.message);
+        logger.error("Qdrant upsert failed", e);
         throw e;
     }
 }
 
-
+/**
+ * Query top-K similar embeddings
+ */
 async function query(collectionName, embedding, topK = 5) {
-    const endpoint = `${CHROMA_URL}/collections/${collectionName}/query`;
     try {
-        const res = await axios.post(endpoint, { query: embedding, n_results: topK });
-        return res.data;
+
+        const result = await qdrant.search(collectionName, {
+            vector: embedding,
+            limit: topK,
+              vector_name: "vector"
+        });
+
+        return result;
     } catch (e) {
-        logger.error('Chroma query failed', e?.response?.data || e.message);
+        logger.error("Qdrant query failed", e);
         throw e;
     }
 }
 
 module.exports = {
-    initVectorStore, upsertEmbeddings, query
-}
+    initVectorStore,
+    ensureCollection,
+    upsertEmbeddings,
+    query,
+};

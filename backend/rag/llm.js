@@ -1,30 +1,56 @@
 const axios = require('axios');
 const logger = require('../utils/logger');
+const OpenAI = require("openai");
 
+const openai = new OpenAI({
+  apiKey: process.env.OPENAI_API_KEY
+});
 
-async function callLLM(question, hits) {
-    // Build context
-    const context = (hits || []).map(h => `- ${h.id || ''}: ${h.text || JSON.stringify(h)}`).join('\n');
-    const prompt = `Answer using ONLY the context below. If not present, say you don't know.\n\nContext:\n${context}\n\nQuestion: ${question}`;
-
-
-    // If using Gemini, call its REST endpoint here. This is a placeholder that returns a canned answer.
-    // Replace with real API call and auth headers.
-    logger.info('Calling LLM with prompt of length ' + prompt.length);
-    // TODO: implement real Gemini API call
-    return `<<LLM answer placeholder>>\n(You should replace callLLM with real API call to Gemini or other LLM)`;
+function buildContext(hits = []) {
+  return hits
+    .map(h => `- (${h.score.toFixed(4)}) ${h.text}`)
+    .join('\n');
 }
+async function callLLM(question, hits) {
+  const context = buildContext(hits);
 
+  const prompt = `
+        You are a news answering assistant.
+
+        Use ONLY the context below; Answer questions using the provided documents. If the information is not available, respond politely without hallucinating. For example, “I don’t have that information in the documents I can access, but I can help answer questions about the news articles and mention categories.
+
+        Context:
+        ${context}
+
+        Question: ${question}
+        `.trim();
+
+  try {
+    const response = await openai.chat.completions.create({
+      model: "gpt-4",  // or "gpt-3.5-turbo"
+      messages: [
+        { role: "system", content: "You are a helpful news assistant." },
+        { role: "user", content: prompt }
+      ],
+      temperature: 0
+    });
+
+    // The assistant’s reply is in response.choices[0].message.content
+    return response.choices[0].message.content;
+  } catch (err) {
+    console.error("OpenAI API call failed", err);
+    throw err;
+  }
+}
 
 async function callLLMStream(question, hits, onToken) {
-    // Placeholder streaming implementation: split placeholder into tokens and call onToken
-    const answer = await callLLM(question, hits);
-    const tokens = answer.split(/\s+/);
-    for (const t of tokens) {
-        await new Promise(r => setTimeout(r, 30));
-        onToken(t + ' ');
-    }
-}
+  const full = await callLLM(question, hits);
+  const tokens = full.split(/\s+/);
 
+  for (const t of tokens) {
+    await new Promise(r => setTimeout(r, 25));
+    onToken(t + ' ');
+  }
+}
 
 module.exports = { callLLM, callLLMStream };

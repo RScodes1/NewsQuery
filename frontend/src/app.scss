@@ -1,0 +1,22 @@
+
+.welcome-screen {
+  text-align: center;
+  padding: 5rem 1rem;
+
+  h2 {
+    margin-bottom: 1.2rem;
+  }
+
+  button {
+    padding: 0.7rem 1.5rem;
+    background: #e28838;
+    color: white;
+    border: none;
+    border-radius: 8px;
+    cursor: pointer;
+
+    &:hover {
+      background: darken(#da8632, 10%);
+    }
+  }
+}

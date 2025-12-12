@@ -3,7 +3,6 @@ const router = express.Router();
 const { createSession } = require('../models/session.model');
 const { getRedis } = require('../config/redis');
 
-
 // create new session
 router.post('/create', async (req, res) => {
     try {
@@ -17,7 +16,6 @@ router.post('/create', async (req, res) => {
     }
 });
 
-
 // get session history
 router.get('/:id/history', async (req, res) => {
     try {
@@ -29,7 +27,6 @@ router.get('/:id/history', async (req, res) => {
         res.status(500).json({ error: e.message });
     }
 });
-
 
 // clear session history
 router.delete('/:id/clear', async (req, res) => {
