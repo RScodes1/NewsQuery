@@ -82,7 +82,7 @@ async function query(collectionName, embedding, topK = 5) {
         const result = await qdrant.search(collectionName, {
             vector: embedding,
             limit: topK,
-              vector_name: "vector"
+            vector_name: "vector"
         });
 
         return result;

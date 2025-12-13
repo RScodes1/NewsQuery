@@ -40,9 +40,8 @@ async function start() {
         await initDb(process.env.MONGODB_URI);
         await initRedis(process.env.REDIS_URL);
         await initVectorStore(process.env.QDRANT_URL, process.env.QDRANT_API_KEY);
-        await  ingestArticles(articles.urls, "news_articles");
-   
-        await ensureCollection("news_articles", 768); // 768 → Jina embedding size
+        await ensureCollection("news_articles", 768);
+        await ingestArticles(articles.urls, "news_articles");
 
         initSocket(io);
 

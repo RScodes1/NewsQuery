@@ -3,7 +3,7 @@ import { io } from "socket.io-client";
 let socket;
 
 export const initSocket = (sessionId, onToken, onFinal) => {
-    socket = io(process.env.REACT_APP_API_URL || 'http://localhost:4500', {
+    socket = io(process.env.REACT_APP_API_URL || 'https://newsquery.onrender.com', {
         transports: ["websocket"]
     });
 
@@ -12,7 +12,7 @@ export const initSocket = (sessionId, onToken, onFinal) => {
     });
 
     socket.on("bot_token", ({ token }) => onToken(token));
-    socket.on("bot_response", ({ text }) => onFinal(text));
+    socket.on("bot_done")
 
     return socket;
 };
@@ -28,5 +28,8 @@ export const sendMessage = (sessionId, message) => {
         return;
     }
 
-    socket.emit("user_message", { sessionId, message });
+     else {
+       socket.emit("user_message", { sessionId, message });
+     }
+  
 };

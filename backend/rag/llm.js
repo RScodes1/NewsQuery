@@ -44,12 +44,14 @@ async function callLLM(question, hits) {
 
 async function callLLMStream(question, hits, onToken) {
   const full = await callLLM(question, hits);
-  const tokens = full.split(/\s+/);
 
-  for (const t of tokens) {
-    await new Promise(r => setTimeout(r, 25));
-    onToken(t + ' ');
+  for (const char of full) {
+    await new Promise(r => setTimeout(r, 15));
+    onToken(char);
   }
+
+  return full;
 }
+
 
 module.exports = { callLLM, callLLMStream };
