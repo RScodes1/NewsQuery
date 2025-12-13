@@ -7,6 +7,7 @@
 
 -Frontend: React 18.2.0 \
 -Backend: Node.js >=18 \
+-DB: MongoDB, Redis
 -Vector DB: Qdrant \ 
 -Embeddings: Jina Embeddings \
 -LLM: OpenAI API Model \
